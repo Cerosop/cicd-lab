@@ -1,0 +1,45 @@
+name: Run Tests
+
+on:
+    push:
+        branches:
+            - "**"
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run TypeScript typecheck
+              run: npm run typecheck
+
+            - name: Run Prettier check
+              run: npm run format:check
+
+            - name: Run tests
+              run: |
+                  mkdir -p reports
+                  npm run test -- --reporter=default --reporter=junit --outputFile.junit=reports/vitest-junit.xml
+
+            - name: Test Report
+              uses: dorny/test-reporter@v3
+              if: ${{ !cancelled() }}
+              with:
+                  name: Vitest Results
+                  path: reports/vitest-junit.xml
+                  reporter: jest-junit
