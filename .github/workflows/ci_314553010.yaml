@@ -32,13 +32,14 @@ jobs:
               run: npm run format:check
 
             - name: Run tests
+              id: tests
               run: |
                   mkdir -p reports
-                  npm run test -- --reporter=default --reporter=junit --outputFile.junit=reports/vitest-junit.xml
+                  npm run test -- --reporter=default --reporter=junit --outputFile=reports/vitest-junit.xml
 
             - name: Test Report
               uses: dorny/test-reporter@v3
-              if: ${{ !cancelled() }}
+              if: ${{ !cancelled() && hashFiles('reports/vitest-junit.xml') != '' }}
               with:
                   name: Vitest Results
                   path: reports/vitest-junit.xml
